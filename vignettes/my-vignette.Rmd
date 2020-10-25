@@ -47,9 +47,9 @@ testBH <- BostonHousing[-trainIndex,]
 
 ### Fit linear regression model and a linear regression model with forward selection on the training set:  
 ```{r}
-lm1 <- caret::train(medv ~ ., data=trainBH, method = "lm")
+lm1 = caret::train(medv ~ ., data=trainBH, method = "lm")
 lm1
-lm_forward <- caret::train(medv ~ ., data=trainBH, method = "leapForward")
+lm_forward = caret::train(medv ~ ., data=trainBH, method = "leapForward")
 lm_forward
 ```
 
