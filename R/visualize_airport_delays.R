@@ -2,7 +2,7 @@
 #' 
 #' This function creates a plot that visualizes the mean delay of flights for different airports by longitude and latitude.
 #' 
-#' @return Returns a graph
+#' @return Returns a graph with the mean delay values for airports within the United States, plotted by their map coordinates 
 #' 
 #' @import dplyr
 #' @import ggplot2

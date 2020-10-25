@@ -20,12 +20,11 @@ ridgereg <- setRefClass("ridgereg",
                         fields= list(formula="formula",
                                      call = "vector",
                                      data="data.frame",
-                                     norm_matrix="matrix",
                                      lambda="numeric",
                                      y_hat = "matrix",
                                      beta_hat = "matrix",
-                                     X = "matrix",
-                                     Y = "matrix"
+                                     x_values = "matrix",
+                                     y_values = "matrix"
                         ), 
                         
                         
@@ -44,35 +43,31 @@ ridgereg <- setRefClass("ridgereg",
                             lambda <<- lambda
                             
                             #Independent X-values
-                            X <<- scale(model.matrix(formula, data=data)[,-1])
+                            x_values <<- scale(model.matrix(formula, data=data)[,-1])
                             
                             #Dependent y-values
                             y_label <- all.vars(formula)[1]
-                            Y <<- as.matrix(data[[y_label]])
+                            y_values <<- as.matrix(data[[y_label]])
                             
                             #Normalize covariates
                             
-                            L = diag(x = sqrt(lambda), nrow = ncol(X), ncol = ncol(X))
-                            
-                            X_new = rbind(X, L)
-                            Y_new = rbind(Y, matrix(0, nrow = ncol(X), ncol = 1))
+                            x_values_new <- rbind(x_values, diag(x = sqrt(lambda), nrow = ncol(x_values), ncol = ncol(x_values)))
+                            y_values_new <- rbind(y_values, matrix(0, nrow = ncol(x_values), ncol = 1))
                             
                             #QR
                             
-                            xQR=qr(X_new)
+                            xQR = qr(x_values_new)
                             Q = qr.Q(xQR)
                             R = qr.R(xQR)
                             
                             #Coefficient estimates
                           
-                            beta_hat <<- solve(R) %*% t(Q) %*% Y_new
+                            beta_hat <<- solve(R) %*% t(Q) %*% y_values_new
 
-                            #beta_hat <<- solve(t(norm_matrix) %*% norm_matrix + diag(lamda, nrow=ncol(norm_matrix))) %*% t(norm_matrix) %*% y
                             
                             #Fitted values
                             
-                            #y_hat <<- norm_matrix %*% beta_hat
-                            y_hat <<- X %*% beta_hat
+                            y_hat <<- x_values %*% beta_hat
                             
                           },
                           

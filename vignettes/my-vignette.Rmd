@@ -1,0 +1,31 @@
+---
+title: "ridgereg"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{ridgereg}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(BonusLab)
+library(mlbench)
+library(caret)
+```
+
+## Simple prediction problem:  
+The below code shows how to use the ridgereg function to model a simple linear progression with the Iris data set  
+```{r}
+mod_object <- ridgereg(Petal.Length~Species, data = iris, lambda = 0.02)
+mod_object$print()
+```
+
+
+## Predictive model:  
