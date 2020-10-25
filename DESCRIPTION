@@ -9,5 +9,7 @@ Description: More about what it does (maybe more than one line)
 Encoding: UTF-8
 License: What license is it under?
 RoxygenNote: 7.1.1
+Imports:
+    MASS
 Suggests: 
     testthat
