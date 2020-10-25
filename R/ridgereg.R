@@ -22,7 +22,9 @@ ridgereg <- setRefClass("ridgereg",
                                      norm_matrix="matrix",
                                      lambda="numeric",
                                      y_hat = "matrix",
-                                     beta_hat = "vector"
+                                     beta_hat = "matrix",
+                                     X = "matrix",
+                                     Y = "matrix"
                         ), 
                         
                         
@@ -35,29 +37,36 @@ ridgereg <- setRefClass("ridgereg",
                             data <<- data
                             lambda <<- lambda
                             
-                            
-                            #Normalize covairates
-                            
-                            norm_matrix <<- model.matrix(formula, data)
-                            
-                            for(i in 2:ncol(data)){
-                              
-                              norm_matrix[,i] <<- (data[,1+i] - mean(data[,1+i]))/sqrt(var(data[,i+1]))
-                              
-                            }
+                            #Independent X-values
+                            X <<- scale(model.matrix(formula, data=data)[,-1])
                             
                             #Dependent y-values
-                            
                             y_label <- all.vars(formula)[1]
-                            y <- data[[y_label]]
+                            Y <<- as.matrix(data[[y_label]])
+                            
+                            #Normalize covariates
+                            
+                            L = diag(x = sqrt(lambda), nrow = ncol(X), ncol = ncol(X))
+                            
+                            X_new = rbind(X, L)
+                            Y_new = rbind(Y, matrix(0, nrow = ncol(X), ncol = 1))
+                            
+                            #QR
+                            
+                            xQR=qr(X_new)
+                            Q = qr.Q(xQR)
+                            R = qr.R(xQR)
                             
                             #Coefficient estimates
-                            
-                            beta_hat <<- solve(t(norm_matrix) %*% norm_matrix + diag(lamda, nrow=ncol(norm_matrix))) %*% t(norm_matrix) %*% y
+                          
+                            beta_hat <<- solve(R) %*% t(Q) %*% Y_new
+
+                            #beta_hat <<- solve(t(norm_matrix) %*% norm_matrix + diag(lamda, nrow=ncol(norm_matrix))) %*% t(norm_matrix) %*% y
                             
                             #Fitted values
                             
-                            y_hat <<- norm_matrix %*% beta_hat
+                            #y_hat <<- norm_matrix %*% beta_hat
+                            y_hat <<- X %*% beta_hat
                             
                           },
                           
@@ -97,7 +106,3 @@ ridgereg <- setRefClass("ridgereg",
                         )
 )
 
-
-data(iris)
-mod_object <- lm(Petal.Length~Species, data = iris)
-print(mod_object)
