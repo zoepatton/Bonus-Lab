@@ -5,6 +5,9 @@ vignette: >
   %\VignetteIndexEntry{ridgereg}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteDepends{caret}
+  %\VignetteDepends{mlbench}
+  %\VignetteDepends{ridgereg}
 ---
 
 ```{r, include = FALSE}
@@ -29,3 +32,98 @@ mod_object$print()
 
 
 ## Predictive model:  
+
+### Dividing the BostonHousing data:  
+```{r}
+data("BostonHousing")
+set.seed(825)
+trainIndex <- createDataPartition(BostonHousing$medv, p = .8, 
+                                  list = FALSE, 
+                                  times = 1)
+
+trainBH <- BostonHousing[trainIndex,]
+testBH <- BostonHousing[-trainIndex,]
+```   
+
+### Fit linear regression model and a linear regression model with forward selection on the training set:  
+```{r}
+set.seed(825)
+lm1 <- caret::train(medv ~ ., data=trainBH, method = "lm")
+lm1
+lm_forward <- caret::train(medv ~ ., data=trainBH, method = "leapForward")
+lm_forward
+```
+
+Evaluating performance  -> the linear model seems to be slightly better, since it has higher R^2, and lower mean/absolute error
+(RMSE = root mean squared error, mae= mean absolute error)  
+
+```{r}
+listing_models<- list(lm = lm1, forward = lm_forward)
+r <- resamples(listing_models)
+summary(r)
+```
+
+### Fit a ridge regression model:
+```{r}
+ridge_reg = function(){
+  
+  lprr = list(type="Regression", library="BonusLab", loop=NULL)
+  
+  prm = data.frame(parameter = "lambda",
+                    class = "numeric",
+                    label =  "Lambda")
+  
+  lprr$parameters = prm
+  
+  rrGrid = function(x, y, len = NULL, search = "grid"){
+    
+    tuning = data.frame(lambda = c(1, 2, 3, 4))
+    return(tuning)
+  }
+  
+  lprr$grid = rrGrid
+  
+  
+  rrFit = function(x, y, wts, param, lev, last, weights, classProbs, ...){
+    
+    f = ridgereg(formula = y ~ ., data = x, lambda = param$lambda)
+    return(f)
+  }
+  
+  lprr$fit = rrFit
+  
+  
+  rrPred = function(modelFit, newdata, preProc = NULL, submodels = NULL){
+    ridgereg::predict(newdata)
+  }
+  
+  lprr$predict = rrPred
+  
+  rrProb = function(modelFit, newdata, preProc = NULL, submodels = NULL){
+    ridgereg::predict(newdata, type = "probabilities")
+  }
+  lprr$prob = rrProb
+  
+ 
+  
+  return(lprr)
+  
+}
+```
+
+```{r, eval=FALSE}
+
+r_r = ridge_reg()
+
+set.seed(998)
+
+fitControl <- trainControl(method = "repeatedcv",
+                           number = 10,
+                           repeats = 10)
+
+set.seed(825)
+ridge <- train(medv ~., data = trainBH, 
+                   method = r_r, 
+                   trControl = fitControl)
+ridge
+```
