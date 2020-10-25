@@ -17,7 +17,8 @@
 
 ridgereg <- setRefClass("ridgereg",
                         # Include fields ------          
-                        fields= list(formula="formula", 
+                        fields= list(formula="formula",
+                                     call = "vector",
                                      data="data.frame",
                                      norm_matrix="matrix",
                                      lambda="numeric",
@@ -28,11 +29,16 @@ ridgereg <- setRefClass("ridgereg",
                         ), 
                         
                         
-                        
                         methods=list(
                           #Initialize the the function ------
                           initialize = function(formula, data, lambda){
-                            
+                            call <<- c("ridgereg(formula = ",
+                                       Reduce(paste,deparse(formula)),
+                                       ", data = ",
+                                       deparse(substitute(data)),
+                                       ", lambda = ",
+                                       lambda,
+                                       ")")
                             formula <<- formula
                             data <<- data
                             lambda <<- lambda
@@ -79,7 +85,7 @@ ridgereg <- setRefClass("ridgereg",
                             #Names of the coefficients
                             c_names <- row.names(beta_hat)
                             #Vals of coeff.
-                            c_vals <- as.numeric(beta_hat)
+                            c_vals <- as.vector(beta_hat)
                             #print Coefficients:
                             cat("\n\nCoefficients:\n")
                             cat(paste(c_names,collapse = "  "),collapse="\n")
@@ -105,4 +111,6 @@ ridgereg <- setRefClass("ridgereg",
                           }
                         )
 )
+
+#print call: mod_object$print()
 
