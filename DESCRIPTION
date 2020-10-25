@@ -14,7 +14,9 @@ Imports:
     dplyr,
     nycflights13,
     maps,
-    ggplot2
+    ggplot2,
+    mlbench,
+    caret
 Suggests: 
     testthat,
     knitr,
